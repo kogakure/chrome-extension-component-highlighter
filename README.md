@@ -14,34 +14,37 @@ Before using, open the extension options page (right-click the icon → Options)
 
 ## Features
 
-Adds a blue border around each matched element.
+Adds a colored outline around each matched element.
 
 ### Pop-Up Menu
 
-The popup offers three search modes:
+The popup shows a component count for the current page and offers three search modes:
 
 - **All Components** — highlight every element with the configured attribute
 - **Selected Component** — pick one value from the list of attributes found on the page
 - **Custom Component** — partial string match (e.g. find all elements whose attribute value contains "button")
 
-Enable **Show Info** to display the attribute value as a label on each matched element.
+Enable **Show info labels** to display the attribute value as a badge on each matched element.
 
-Press **Show** to activate highlighting. Press it again after changing settings to re-apply. Press **Hide** to remove all highlighting.
+Press **Activate** to start highlighting. The button toggles to **Deactivate** to remove all highlighting.
 
 ### Options Page
 
 Right-click the extension icon and choose the menu option to open the options page. Configure:
 
+- **Highlight Color** — color used for component outlines, badge accents, and info labels (default: `#3b82f6`)
 - **Data Attribute** — attribute name to scan for (default: `data-component`)
 - **Custom CSS** — override default highlight styling. Target `.highlighted-component` for matched elements and `.info-layer` for value labels.
 
-> **Note**: Changing the data-attribute does not re-scan already-loaded tabs. Reload the tab or press Show in the popup to apply the new attribute.
+> **Note**: Changing the data-attribute does not re-scan already-loaded tabs. Reload the tab or press Activate in the popup to apply the new attribute.
 
 ## Release
 
 Build a distributable ZIP for Chrome Web Store submission:
 
 ```bash
-./release.sh
-# Output: dist/component-highlighter-<timestamp>.zip
+./release.sh [patch|minor|major]
+# Output: dist/component-highlighter-<version>.zip
 ```
+
+Bumps the version in `manifest.json`, commits the change, creates a git tag, and packages the extension.
