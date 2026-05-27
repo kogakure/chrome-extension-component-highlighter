@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Component Highlighter Options</title>
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/content.css" />
+    <link rel="stylesheet" href="/css/options.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="page-header">
+        <span class="app-title">Component Highlighter</span>
+        <div class="header-right">
+          <span class="save-status" id="save-status" aria-live="polite"></span>
+          <span class="header-label">Options</span>
+        </div>
+      </header>
+
+      <main>
+        <!-- Appearance -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Appearance</span>
+            <button type="button" class="reset-link" id="reset-appearance">Reset</button>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">Highlight color</span>
+            <div class="swatch-row" role="radiogroup" aria-label="Preset colors">
+              <label class="swatch-label" title="Blue">
+                <input type="radio" name="color-preset" class="swatch-radio" value="#3b82f6" />
+                <span class="swatch" style="background:#3b82f6"></span>
+              </label>
+              <label class="swatch-label" title="Green">
+                <input type="radio" name="color-preset" class="swatch-radio" value="#22c55e" />
+                <span class="swatch" style="background:#22c55e"></span>
+              </label>
+              <label class="swatch-label" title="Amber">
+                <input type="radio" name="color-preset" class="swatch-radio" value="#f59e0b" />
+                <span class="swatch" style="background:#f59e0b"></span>
+              </label>
+              <label class="swatch-label" title="Red">
+                <input type="radio" name="color-preset" class="swatch-radio" value="#ef4444" />
+                <span class="swatch" style="background:#ef4444"></span>
+              </label>
+              <label class="swatch-label" title="Purple">
+                <input type="radio" name="color-preset" class="swatch-radio" value="#a855f7" />
+                <span class="swatch" style="background:#a855f7"></span>
+              </label>
+              <label class="swatch-label swatch-custom-label" title="Custom color">
+                <input type="radio" name="color-preset" class="swatch-radio" value="custom" />
+                <span class="swatch swatch-custom">+</span>
+              </label>
+            </div>
+            <div class="custom-color-row" id="custom-color-row">
+              <input type="color" id="highlight-color" name="highlight-color" value="#3b82f6" />
+              <input
+                type="text"
+                id="highlight-color-hex"
+                class="hex-input"
+                maxlength="7"
+                placeholder="#3b82f6"
+                aria-label="Hex color value"
+              />
+            </div>
+          </div>
+
+          <div class="setting-row setting-row--split">
+            <div class="setting-col">
+              <span class="setting-label">Outline style</span>
+              <select id="outline-style" name="outline-style">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+              </select>
+            </div>
+            <div class="setting-col">
+              <span class="setting-label">Outline width</span>
+              <div class="range-row">
+                <input
+                  type="range"
+                  id="outline-width"
+                  name="outline-width"
+                  min="1"
+                  max="4"
+                  step="1"
+                  value="2"
+                />
+                <span class="range-value" id="outline-width-value">2px</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Preview -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Preview</span>
+          </div>
+          <div class="preview-card" id="preview-card">
+            <div class="preview-component highlighted-component" id="preview-component">
+              <span class="preview-component-label">Button</span>
+            </div>
+            <div class="info-layer preview-badge" id="preview-badge">button</div>
+          </div>
+          <div class="setting-row">
+            <label class="toggle-row" for="preview-show-info">
+              <input type="checkbox" id="preview-show-info" />
+              Show info label in preview
+            </label>
+          </div>
+        </section>
+
+        <!-- Target -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Target</span>
+            <button type="button" class="reset-link" id="reset-target">Reset</button>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Data attribute name</span>
+            <input
+              type="text"
+              id="data-attribute"
+              name="data-attribute"
+              placeholder="data-component"
+              class="mono-input"
+              spellcheck="false"
+            />
+            <span class="selector-preview" id="selector-preview">[data-component]</span>
+          </div>
+        </section>
+
+        <!-- Custom CSS -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Custom CSS</span>
+            <button type="button" class="reset-link" id="clear-css">Clear</button>
+          </div>
+          <div class="setting-row">
+            <p class="setting-hint">
+              Overwrite default highlighting styles. Target
+              <code>.highlighted-component</code> and <code>.info-layer</code>.
+            </p>
+            <textarea
+              name="custom-styles"
+              id="custom-styles"
+              spellcheck="false"
+              placeholder=".highlighted-component { outline-color: hotpink; }"
+            ></textarea>
+          </div>
+        </section>
+
+        <!-- Backup -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Backup</span>
+          </div>
+          <div class="setting-row backup-row">
+            <button type="button" class="button-primary" id="export-settings">Export settings</button>
+            <button type="button" class="button-tertiary" id="import-settings">Import settings</button>
+            <input type="file" id="import-file" accept=".json" aria-hidden="true" />
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          <button type="button" class="reset-all-link" id="reset-all">Reset all to defaults</button>
+        </footer>
+      </main>
+    </div>
+    <script src="./js/options.js"></script>
+  </body>
+</html>

@@ -1,0 +1,203 @@
+/* ── Shell ────────────────────────────────────────── */
+
+body {
+  background: var(--bg-popup);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+section {
+  width: 280px;
+}
+
+/* ── Header ───────────────────────────────────────── */
+
+header {
+  align-items: center;
+  border-bottom: 1px solid var(--color-fill);
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 14px 11px;
+}
+
+.app-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  opacity: 0.45;
+  text-transform: uppercase;
+}
+
+.counter-chip {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.counter-label {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  opacity: 0.35;
+  text-transform: uppercase;
+}
+
+.component-counter-amount {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+/* ── Fieldsets ────────────────────────────────────── */
+
+fieldset {
+  border: none;
+  border-bottom: 1px solid var(--color-fill);
+  margin: 0;
+  padding: 6px 0;
+}
+
+legend {
+  color: var(--color-text);
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  opacity: 0.35;
+  padding: 4px 14px 4px;
+  text-transform: uppercase;
+  width: 100%;
+}
+
+/* ── Radio rows ───────────────────────────────────── */
+
+label:has(input[type="radio"]) {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 9px;
+  height: auto;
+  padding: 6px 14px;
+  position: relative;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+label:has(input[type="radio"]):hover {
+  background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.05));
+}
+
+label:has(input[type="radio"]:checked) {
+  font-weight: 500;
+}
+
+label:has(input[type="radio"]:checked)::before {
+  background: var(--color-primary);
+  border-radius: 0 2px 2px 0;
+  bottom: 4px;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: 4px;
+  width: 2px;
+}
+
+input[type="radio"] {
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+  height: 14px;
+  margin: 0;
+  width: 14px;
+}
+
+/* ── Select + text sub-controls ──────────────────── */
+
+select,
+input[type="text"] {
+  border-radius: 5px;
+  margin: 2px 14px 6px;
+  width: calc(100% - 28px);
+}
+
+select {
+  height: 26px;
+}
+
+input[type="text"] {
+  box-sizing: border-box;
+  font-size: 12px;
+  height: 26px;
+  padding: 0 8px;
+}
+
+/* ── Checkbox row ─────────────────────────────────── */
+
+label:has(input[type="checkbox"]) {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 9px;
+  height: auto;
+  padding: 6px 14px;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+label:has(input[type="checkbox"]):hover {
+  background: light-dark(rgba(0, 0, 0, 0.04), rgba(255, 255, 255, 0.05));
+}
+
+input[type="checkbox"] {
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  flex-shrink: 0;
+  height: 14px;
+  margin: 0;
+  width: 14px;
+}
+
+/* ── Action bar ───────────────────────────────────── */
+
+.button-container {
+  display: flex;
+  padding: 10px 14px;
+}
+
+#toggle {
+  border-radius: 6px;
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  height: 34px;
+  letter-spacing: 0.01em;
+  transition: background 0.15s, color 0.15s, opacity 0.15s;
+}
+
+#toggle:disabled {
+  opacity: 0.35;
+}
+
+/* Activate state — neutral dark/light, not blue */
+#toggle.button-primary {
+  background: light-dark(#1d2124, #e2e8f0);
+  color: light-dark(#ffffff, #1a1d2e);
+}
+
+#toggle.button-primary:hover:not(:disabled) {
+  background: light-dark(#2d3748, #f0f4f8);
+}
+
+/* Active / hide state — subtle surface */
+#toggle.button-tertiary {
+  background: light-dark(rgba(0, 0, 0, 0.07), rgba(255, 255, 255, 0.07));
+  color: var(--color-text);
+}
+
+#toggle.button-tertiary:hover:not(:disabled) {
+  background: light-dark(rgba(0, 0, 0, 0.12), rgba(255, 255, 255, 0.12));
+}

@@ -1,0 +1,76 @@
+:root {
+  color-scheme: light dark;
+
+  --bg-popup: light-dark(#f3f3f3, #313442);
+  --bg-page: light-dark(#ffffff, #161c24);
+  --color-fill: light-dark(#dbe2e6, #616d7d);
+  --color-hover-tertiary: light-dark(#414d5d, #4a5568);
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-text: light-dark(#1d2124, #ffffff);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--color-primary);
+}
+
+:is(input[type="text"], select, textarea) {
+  background-color: var(--color-fill);
+  border: 1px solid var(--color-fill);
+  color: var(--color-text);
+}
+
+code {
+  background-color: var(--color-fill);
+  border-radius: 5px;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  padding: 0.2em;
+}
+
+button {
+  align-items: center;
+  border-radius: 50px;
+  border: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 16px;
+}
+
+.button-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.button-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.button-tertiary {
+  background-color: var(--color-fill);
+  color: var(--color-text);
+}
+
+.button-tertiary:hover {
+  background-color: var(--color-hover-tertiary);
+  color: #ffffff;
+}
+
+.hidden {
+  display: none;
+}

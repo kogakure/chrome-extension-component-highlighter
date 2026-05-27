@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Component Highlighter</title>
+    <link rel="stylesheet" href="/css/components.css" />
+    <link rel="stylesheet" href="/css/popup.css" />
+  </head>
+  <body>
+    <section>
+      <header>
+        <span class="app-title">Component Highlighter</span>
+        <div class="counter-chip">
+          <span class="counter-label">on page</span>
+          <div
+            id="counter"
+            class="component-counter-amount"
+            aria-live="polite"
+            aria-atomic="true"
+          >0</div>
+        </div>
+      </header>
+      <form>
+        <fieldset>
+          <legend>Mode</legend>
+          <label for="mode-all">
+            <input
+              checked
+              class="radio-mode"
+              id="mode-all"
+              name="mode"
+              type="radio"
+              value="all"
+            />
+            All Components
+          </label>
+          <div id="container-selected">
+            <label for="mode-selected">
+              <input
+                class="radio-mode"
+                id="mode-selected"
+                name="mode"
+                type="radio"
+                value="selected"
+              />
+              Selected Component
+            </label>
+            <select name="component-list" id="component-list" class="hidden">
+              <option value=""></option>
+            </select>
+          </div>
+          <label for="mode-custom">
+            <input
+              class="radio-mode"
+              id="mode-custom"
+              name="mode"
+              type="radio"
+              value="custom"
+            />
+            Custom Component
+          </label>
+          <input
+            type="text"
+            name="custom-component"
+            id="custom-component-search"
+            class="hidden"
+            placeholder="Search…"
+          />
+        </fieldset>
+        <fieldset>
+          <legend>Options</legend>
+          <label for="show-info">
+            <input type="checkbox" id="show-info" name="show-info" />
+            Show info labels
+          </label>
+        </fieldset>
+        <div class="button-container">
+          <button id="toggle" type="button" class="button-primary" disabled>
+            Activate
+          </button>
+        </div>
+      </form>
+    </section>
+    <script src="/js/popup.js"></script>
+  </body>
+</html>

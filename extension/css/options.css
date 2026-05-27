@@ -1,0 +1,366 @@
+/* ── Shell ──────────────────────────────────────────── */
+
+body {
+  background: var(--bg-page);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  min-height: 100dvh;
+}
+
+.page-shell {
+  margin: 0 auto;
+  max-width: 640px;
+  padding: 0 24px 48px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+
+.page-header {
+  align-items: center;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-fill);
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 13px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: light-dark(rgba(255,255,255,0.85), rgba(22,28,36,0.85));
+}
+
+.app-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  opacity: 0.45;
+  text-transform: uppercase;
+}
+
+.header-right {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+}
+
+.header-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  opacity: 0.45;
+  text-transform: uppercase;
+}
+
+.save-status {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.save-status.saving {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+.save-status.saved {
+  color: light-dark(#16a34a, #4ade80);
+  opacity: 1;
+}
+
+/* ── Sections ───────────────────────────────────────── */
+
+.settings-section {
+  border-bottom: 1px solid var(--color-fill);
+  padding: 20px 0;
+}
+
+.section-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  opacity: 0.45;
+  text-transform: uppercase;
+}
+
+.setting-row {
+  margin-bottom: 12px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row--split {
+  display: flex;
+  gap: 24px;
+}
+
+.setting-col {
+  flex: 1;
+}
+
+.setting-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  opacity: 0.75;
+}
+
+.setting-hint {
+  font-size: 12px;
+  margin: 0 0 8px;
+  opacity: 0.6;
+}
+
+/* ── Reset / clear links ────────────────────────────── */
+
+.reset-link,
+.reset-all-link {
+  background: none;
+  border: none;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  opacity: 0.35;
+  padding: 0;
+  transition: opacity 0.15s;
+}
+
+.reset-link:hover,
+.reset-all-link:hover {
+  opacity: 0.7;
+}
+
+/* ── Color swatches ─────────────────────────────────── */
+
+.swatch-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.swatch-label {
+  cursor: pointer;
+  display: block;
+  position: relative;
+}
+
+.swatch-radio {
+  height: 0;
+  opacity: 0;
+  position: absolute;
+  width: 0;
+}
+
+.swatch {
+  border-radius: 50%;
+  display: block;
+  height: 28px;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color 0.15s, transform 0.1s;
+  width: 28px;
+}
+
+.swatch-label:hover .swatch {
+  transform: scale(1.1);
+}
+
+.swatch-radio:checked + .swatch {
+  outline-color: var(--color-primary);
+}
+
+.swatch-custom {
+  align-items: center;
+  background: var(--color-fill);
+  color: var(--color-text);
+  display: flex;
+  font-size: 16px;
+  font-weight: 300;
+  justify-content: center;
+  opacity: 0.6;
+}
+
+.custom-color-row {
+  align-items: center;
+  display: none;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.custom-color-row.visible {
+  display: flex;
+}
+
+input[type="color"] {
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 28px;
+  padding: 2px;
+  width: 40px;
+}
+
+.hex-input {
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  height: 28px;
+  padding: 0 8px;
+  width: 88px;
+}
+
+/* ── Select ─────────────────────────────────────────── */
+
+select {
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  height: 30px;
+  padding: 0 8px;
+  width: 100%;
+}
+
+/* ── Range slider ───────────────────────────────────── */
+
+.range-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+input[type="range"] {
+  accent-color: var(--color-primary);
+  flex: 1;
+}
+
+.range-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-width: 26px;
+  opacity: 0.7;
+  text-align: right;
+}
+
+/* ── Preview card ───────────────────────────────────── */
+
+.preview-card {
+  align-items: center;
+  background: light-dark(
+    repeating-conic-gradient(#e5e7eb 0% 25%, transparent 0% 50%) 0 0 / 20px 20px,
+    repeating-conic-gradient(#1e2533 0% 25%, transparent 0% 50%) 0 0 / 20px 20px
+  );
+  border-radius: 8px;
+  display: flex;
+  height: 100px;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.preview-component {
+  align-items: center;
+  background: light-dark(#f8f9fa, #252d3d);
+  border-radius: 4px;
+  display: flex;
+  height: 44px;
+  justify-content: center;
+  width: 120px;
+}
+
+.preview-component-label {
+  font-size: 12px;
+  opacity: 0.5;
+}
+
+.preview-badge {
+  position: absolute;
+  top: 16px;
+}
+
+.preview-badge.hidden {
+  display: none;
+}
+
+/* ── Mono text input ────────────────────────────────── */
+
+.mono-input {
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  height: 30px;
+  padding: 0 8px;
+  width: 100%;
+}
+
+.selector-preview {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 6px;
+  opacity: 0.45;
+}
+
+/* ── Toggle row ─────────────────────────────────────── */
+
+.toggle-row {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  gap: 9px;
+  user-select: none;
+}
+
+/* ── Textarea ───────────────────────────────────────── */
+
+textarea {
+  border-radius: 5px;
+  box-sizing: border-box;
+  display: block;
+  field-sizing: content;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  min-height: 120px;
+  padding: 8px;
+  width: 100%;
+}
+
+textarea::placeholder {
+  color: var(--color-text);
+  opacity: 0.45;
+}
+
+/* ── Backup row ─────────────────────────────────────── */
+
+.backup-row {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+#import-file {
+  display: none;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+
+.page-footer {
+  padding-top: 20px;
+  text-align: center;
+}

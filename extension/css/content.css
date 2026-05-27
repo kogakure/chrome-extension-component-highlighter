@@ -1,0 +1,80 @@
+:root {
+  --highlight-color: #3b82f6;
+  --ch-badge-bg: #0b1220;
+  --ch-badge-fg: #e2e8f0;
+  --ch-badge-accent: color-mix(in srgb, var(--highlight-color) 80%, white);
+  --ch-badge-radius: 4px;
+  --ch-badge-border: color-mix(in srgb, var(--highlight-color) 60%, transparent);
+}
+
+.highlighted-component {
+  outline: var(--ch-outline-width, 2px) var(--ch-outline-style, solid) var(--highlight-color) !important;
+  outline-offset: 1px !important;
+  position: relative !important;
+}
+
+.highlighted-component::before {
+  background: color-mix(in srgb, var(--highlight-color) 18%, transparent);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* ── badge (lives in fixed body overlay) ─────────── */
+
+.info-layer {
+  align-self: flex-start !important;
+  background: var(--ch-badge-bg);
+  border: 1px solid var(--ch-badge-border);
+  border-radius: var(--ch-badge-radius);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+  box-sizing: content-box !important;
+  color: var(--ch-badge-fg);
+  flex: 0 0 auto !important;
+  font: 600 10px/1.4 ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  height: auto !important;
+  justify-self: start !important;
+  letter-spacing: 0.06em;
+  padding: 2px 6px 2px 5px;
+  pointer-events: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  width: max-content !important;
+}
+
+/* accent dot */
+.info-layer::before {
+  background: var(--ch-badge-accent);
+  border-radius: 1px;
+  content: "";
+  display: inline-block;
+  height: 4px;
+  margin-right: 5px;
+  transform: translateY(-1px);
+  vertical-align: middle;
+  width: 4px;
+}
+
+/* downward arrow (default: badge sits above component) */
+.info-layer::after {
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--ch-badge-bg);
+  bottom: -6px;
+  content: "";
+  filter: drop-shadow(0 2px 0 var(--ch-badge-border));
+  height: 0;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 0;
+}
+
+/* upward arrow (badge flipped below component when near viewport top) */
+.info-layer.flipped::after {
+  border-bottom: 6px solid var(--ch-badge-bg);
+  border-top: none;
+  bottom: auto;
+  top: -6px;
+}
