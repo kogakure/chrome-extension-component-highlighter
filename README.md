@@ -1,5 +1,7 @@
 # Component Highlighter Chrome Extension
 
+![](./images/preview.png)
+
 Chrome extension to highlight HTML elements on any page by matching a configurable data-attribute. Works in all Chromium-based browsers: Chrome, Brave, Arc, Edge, Opera.
 
 ## Installation (Development)
