@@ -53,6 +53,69 @@ header {
   line-height: 1;
 }
 
+/* ── Set tabs ─────────────────────────────────────── */
+
+.set-tabs {
+  border-bottom: 1px solid var(--color-fill);
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.set-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.set-tab {
+  align-items: center;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  gap: 5px;
+  height: 32px;
+  letter-spacing: 0.01em;
+  min-width: 0;
+  opacity: 0.45;
+  padding: 0 10px;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.set-tab:hover {
+  opacity: 0.8;
+}
+
+.set-tab.active {
+  border-bottom-color: var(--tab-color, var(--color-primary));
+  font-weight: 600;
+  opacity: 1;
+}
+
+.set-tab-count {
+  background: var(--color-fill);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 16px;
+  padding: 1px 4px;
+  text-align: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.set-tab.active .set-tab-count {
+  background: var(--tab-color, var(--color-primary));
+  color: #fff;
+}
+
 /* ── Fieldsets ────────────────────────────────────── */
 
 fieldset {

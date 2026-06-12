@@ -2,9 +2,7 @@
   --highlight-color: #3b82f6;
   --ch-badge-bg: #0b1220;
   --ch-badge-fg: #e2e8f0;
-  --ch-badge-accent: color-mix(in srgb, var(--highlight-color) 80%, white);
   --ch-badge-radius: 4px;
-  --ch-badge-border: color-mix(in srgb, var(--highlight-color) 60%, transparent);
 }
 
 .highlighted-component {
@@ -24,6 +22,10 @@
 /* ── badge (lives in fixed body overlay) ─────────── */
 
 .info-layer {
+  /* Per-badge accent vars resolve against this element's own --highlight-color */
+  --ch-badge-accent: color-mix(in srgb, var(--highlight-color) 80%, white);
+  --ch-badge-border: color-mix(in srgb, var(--highlight-color) 60%, transparent);
+
   align-self: flex-start !important;
   background: var(--ch-badge-bg);
   border: 1px solid var(--ch-badge-border);

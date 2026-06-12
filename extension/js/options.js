@@ -1,32 +1,59 @@
-const DEFAULTS = {
+const SET_DEFAULTS = {
+  name: "Default",
+  enabled: true,
+  dataAttribute: "data-component",
   highlightColor: "#3b82f6",
   outlineStyle: "solid",
   outlineWidth: 2,
-  dataAttribute: "data-component",
-  customCSS: "",
+  mode: "all",
+  selectedComponent: "",
+  customComponentSearch: "",
 };
 
-const PRESET_COLORS = new Set(["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#a855f7"]);
+function makeSet(overrides = {}) {
+  return { ...SET_DEFAULTS, ...overrides, id: crypto.randomUUID() };
+}
 
-const EXPORT_KEYS = ["highlightColor", "outlineStyle", "outlineWidth", "dataAttribute", "customCSS"];
+// Pick the next preset color in sequence when adding a new set
+const ADD_COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#3b82f6"];
 
-// Elements
-const saveStatusEl = document.getElementById("save-status");
-const colorPresetRadios = document.querySelectorAll(".swatch-radio");
-const customColorRow = document.getElementById("custom-color-row");
-const colorPickerEl = document.getElementById("highlight-color");
-const hexInputEl = document.getElementById("highlight-color-hex");
-const outlineStyleEl = document.getElementById("outline-style");
-const outlineWidthEl = document.getElementById("outline-width");
+let state = { sets: [makeSet()], customCSS: "" };
+let activeSetId = state.sets[0].id;
+
+function getActiveSet() {
+  return state.sets.find((s) => s.id === activeSetId) ?? null;
+}
+
+function updateActiveSet(patch) {
+  const set = getActiveSet();
+  if (!set) return;
+  Object.assign(set, patch);
+  saveSets();
+}
+
+// ── DOM Elements ──────────────────────────────────────────────────────────
+
+const saveStatusEl        = document.getElementById("save-status");
+const colorPresetRadios   = document.querySelectorAll(".swatch-radio");
+const customColorRow      = document.getElementById("custom-color-row");
+const colorPickerEl       = document.getElementById("highlight-color");
+const hexInputEl          = document.getElementById("highlight-color-hex");
+const outlineStyleEl      = document.getElementById("outline-style");
+const outlineWidthEl      = document.getElementById("outline-width");
 const outlineWidthValueEl = document.getElementById("outline-width-value");
-const dataAttributeEl = document.getElementById("data-attribute");
-const selectorPreviewEl = document.getElementById("selector-preview");
-const customStylesEl = document.getElementById("custom-styles");
-const previewComponentEl = document.getElementById("preview-component");
-const previewBadgeEl = document.getElementById("preview-badge");
-const previewShowInfoEl = document.getElementById("preview-show-info");
+const dataAttributeEl     = document.getElementById("data-attribute");
+const selectorPreviewEl   = document.getElementById("selector-preview");
+const customStylesEl      = document.getElementById("custom-styles");
+const previewComponentEl  = document.getElementById("preview-component");
+const previewBadgeEl      = document.getElementById("preview-badge");
+const previewShowInfoEl   = document.getElementById("preview-show-info");
+const setPillsEl          = document.getElementById("set-pills");
+const setNameEl           = document.getElementById("set-name");
+const setEnabledEl        = document.getElementById("set-enabled");
+const deleteSetBtn        = document.getElementById("delete-set");
 
-// Status pill
+// ── Status pill ───────────────────────────────────────────────────────────
+
 let saveTimer = null;
 function showSaving() {
   saveStatusEl.textContent = "Saving…";
@@ -36,40 +63,43 @@ function showSaving() {
 function showSaved() {
   saveStatusEl.textContent = "Saved";
   saveStatusEl.className = "save-status saved";
-  saveTimer = setTimeout(() => {
-    saveStatusEl.className = "save-status";
-  }, 2000);
+  saveTimer = setTimeout(() => { saveStatusEl.className = "save-status"; }, 2000);
 }
 
-// Debounce helper
+// ── Debounce helper ───────────────────────────────────────────────────────
+
 function debounce(fn, ms) {
   let t;
-  return (...args) => {
-    clearTimeout(t);
-    t = setTimeout(() => fn(...args), ms);
-  };
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
 
-// Save one or more keys
-function save(data) {
+// ── Save helpers ──────────────────────────────────────────────────────────
+
+function saveSets() {
   showSaving();
-  chrome.storage.local.set(data);
+  chrome.storage.local.set({ sets: state.sets }, showSaved);
 }
 
-// Preview card rendering (pure CSS via inline custom properties)
+function saveGlobal(data) {
+  showSaving();
+  chrome.storage.local.set(data, showSaved);
+}
+
+// ── Preview ───────────────────────────────────────────────────────────────
+
 function updatePreview(color, style, width) {
-  const c = color || DEFAULTS.highlightColor;
-  const s = style || DEFAULTS.outlineStyle;
-  const w = width ?? DEFAULTS.outlineWidth;
+  const c = color || SET_DEFAULTS.highlightColor;
+  const s = style || SET_DEFAULTS.outlineStyle;
+  const w = width ?? SET_DEFAULTS.outlineWidth;
   previewComponentEl.style.setProperty("--highlight-color", c);
   previewComponentEl.style.setProperty("--ch-outline-style", s);
   previewComponentEl.style.setProperty("--ch-outline-width", `${w}px`);
+  // Badge uses --highlight-color for its CSS-computed accent/border vars
   previewBadgeEl.style.setProperty("--highlight-color", c);
-  previewBadgeEl.style.setProperty("--ch-badge-accent", `color-mix(in srgb, ${c} 80%, white)`);
-  previewBadgeEl.style.setProperty("--ch-badge-border", `color-mix(in srgb, ${c} 60%, transparent)`);
 }
 
-// Color preset: select matching preset radio or "custom"
+// ── Color preset sync ─────────────────────────────────────────────────────
+
 function syncPresetRadios(hex) {
   const norm = hex.toLowerCase();
   const match = [...colorPresetRadios].find((r) => r.value === norm);
@@ -83,45 +113,128 @@ function syncPresetRadios(hex) {
   }
 }
 
-// Populate all UI from storage
-function populate({ highlightColor, outlineStyle, outlineWidth, dataAttribute, customCSS }) {
-  const color = highlightColor ?? DEFAULTS.highlightColor;
-  const style = outlineStyle ?? DEFAULTS.outlineStyle;
-  const width = outlineWidth ?? DEFAULTS.outlineWidth;
-  const attr = dataAttribute ?? DEFAULTS.dataAttribute;
-  const css = customCSS ?? DEFAULTS.customCSS;
+// ── Set pills ─────────────────────────────────────────────────────────────
 
+function renderPills() {
+  setPillsEl.innerHTML = "";
+  for (const set of state.sets) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.role = "tab";
+    btn.className = "set-pill" + (set.id === activeSetId ? " active" : "");
+    btn.textContent = set.name || "Unnamed";
+    btn.style.setProperty("--pill-color", set.highlightColor);
+    btn.addEventListener("click", () => {
+      activeSetId = set.id;
+      renderPills();
+      populateSetEditor();
+    });
+    setPillsEl.appendChild(btn);
+  }
+}
+
+// ── Set editor ────────────────────────────────────────────────────────────
+
+function populateSetEditor() {
+  const set = getActiveSet();
+  if (!set) return;
+
+  setNameEl.value = set.name;
+  setEnabledEl.checked = set.enabled;
+  deleteSetBtn.disabled = state.sets.length <= 1;
+
+  // Target
+  const attr = set.dataAttribute || SET_DEFAULTS.dataAttribute;
+  dataAttributeEl.value = attr;
+  selectorPreviewEl.textContent = `[${attr}]`;
+
+  // Appearance
+  const color = set.highlightColor ?? SET_DEFAULTS.highlightColor;
+  const style = set.outlineStyle ?? SET_DEFAULTS.outlineStyle;
+  const width = set.outlineWidth ?? SET_DEFAULTS.outlineWidth;
   colorPickerEl.value = color;
   hexInputEl.value = color;
   syncPresetRadios(color);
-
   outlineStyleEl.value = style;
-
   outlineWidthEl.value = width;
   outlineWidthValueEl.textContent = `${width}px`;
-
-  dataAttributeEl.value = attr;
-  selectorPreviewEl.textContent = `[${attr || DEFAULTS.dataAttribute}]`;
-
-  customStylesEl.value = css;
-
   updatePreview(color, style, width);
 }
 
+// ── Full populate from storage ─────────────────────────────────────────────
+
+function populate({ sets, customCSS }) {
+  state.sets = (Array.isArray(sets) && sets.length) ? sets : [makeSet()];
+  state.customCSS = customCSS ?? "";
+
+  if (!activeSetId || !state.sets.find((s) => s.id === activeSetId)) {
+    activeSetId = state.sets[0].id;
+  }
+
+  renderPills();
+  populateSetEditor();
+  customStylesEl.value = state.customCSS;
+}
+
 // Load from storage on open
-chrome.storage.local.get(EXPORT_KEYS, populate);
+chrome.storage.local.get(["sets", "customCSS"], populate);
 
 // React to storage changes from other pages (popup, content)
 chrome.storage.onChanged.addListener((changes) => {
-  const relevant = EXPORT_KEYS.filter((k) => k in changes);
+  const relevant = ["sets", "customCSS"].filter((k) => k in changes);
   if (!relevant.length) return;
-  chrome.storage.local.get(EXPORT_KEYS, (data) => {
+  chrome.storage.local.get(["sets", "customCSS"], (data) => {
     populate(data);
     showSaved();
   });
 });
 
-// ── Appearance bindings ──────────────────────────────
+// ── Add / Delete set ──────────────────────────────────────────────────────
+
+document.getElementById("add-set").addEventListener("click", () => {
+  const n = state.sets.length;
+  const color = ADD_COLORS[n % ADD_COLORS.length];
+  const newSet = makeSet({ name: `Set ${n + 1}`, highlightColor: color });
+  state.sets.push(newSet);
+  activeSetId = newSet.id;
+  renderPills();
+  populateSetEditor();
+  saveSets();
+  // Scroll new pill into view
+  setTimeout(() => {
+    const pills = setPillsEl.querySelectorAll(".set-pill");
+    pills[pills.length - 1]?.scrollIntoView({ block: "nearest" });
+  }, 0);
+});
+
+deleteSetBtn.addEventListener("click", () => {
+  if (state.sets.length <= 1) return;
+  state.sets = state.sets.filter((s) => s.id !== activeSetId);
+  activeSetId = state.sets[0].id;
+  renderPills();
+  populateSetEditor();
+  saveSets();
+});
+
+// ── Set name & enabled ────────────────────────────────────────────────────
+
+const saveSetName = debounce((val) => {
+  updateActiveSet({ name: val.trim() || SET_DEFAULTS.name });
+}, 300);
+
+setNameEl.addEventListener("input", () => {
+  // Instant pill label update for visual feedback
+  const set = getActiveSet();
+  if (set) set.name = setNameEl.value.trim() || SET_DEFAULTS.name;
+  renderPills();
+  saveSetName(setNameEl.value);
+});
+
+setEnabledEl.addEventListener("change", () => {
+  updateActiveSet({ enabled: setEnabledEl.checked });
+});
+
+// ── Appearance bindings ───────────────────────────────────────────────────
 
 colorPresetRadios.forEach((radio) => {
   radio.addEventListener("change", () => {
@@ -133,7 +246,8 @@ colorPresetRadios.forEach((radio) => {
     colorPickerEl.value = radio.value;
     hexInputEl.value = radio.value;
     updatePreview(radio.value, outlineStyleEl.value, Number(outlineWidthEl.value));
-    save({ highlightColor: radio.value });
+    updateActiveSet({ highlightColor: radio.value });
+    renderPills();
   });
 });
 
@@ -141,14 +255,16 @@ colorPickerEl.addEventListener("input", () => {
   const hex = colorPickerEl.value;
   hexInputEl.value = hex;
   updatePreview(hex, outlineStyleEl.value, Number(outlineWidthEl.value));
-  save({ highlightColor: hex });
+  updateActiveSet({ highlightColor: hex });
+  renderPills();
 });
 
 const saveHex = debounce((hex) => {
   if (/^#[0-9a-f]{6}$/i.test(hex)) {
     colorPickerEl.value = hex;
     updatePreview(hex, outlineStyleEl.value, Number(outlineWidthEl.value));
-    save({ highlightColor: hex });
+    updateActiveSet({ highlightColor: hex });
+    renderPills();
   }
 }, 300);
 
@@ -156,70 +272,77 @@ hexInputEl.addEventListener("input", () => saveHex(hexInputEl.value));
 
 outlineStyleEl.addEventListener("change", () => {
   updatePreview(colorPickerEl.value, outlineStyleEl.value, Number(outlineWidthEl.value));
-  save({ outlineStyle: outlineStyleEl.value });
+  updateActiveSet({ outlineStyle: outlineStyleEl.value });
 });
 
 outlineWidthEl.addEventListener("input", () => {
   const w = Number(outlineWidthEl.value);
   outlineWidthValueEl.textContent = `${w}px`;
   updatePreview(colorPickerEl.value, outlineStyleEl.value, w);
-  save({ outlineWidth: w });
+  updateActiveSet({ outlineWidth: w });
 });
 
 document.getElementById("reset-appearance").addEventListener("click", () => {
-  save({
-    highlightColor: DEFAULTS.highlightColor,
-    outlineStyle: DEFAULTS.outlineStyle,
-    outlineWidth: DEFAULTS.outlineWidth,
+  updateActiveSet({
+    highlightColor: SET_DEFAULTS.highlightColor,
+    outlineStyle: SET_DEFAULTS.outlineStyle,
+    outlineWidth: SET_DEFAULTS.outlineWidth,
   });
+  populateSetEditor();
 });
 
-// ── Preview show-info toggle ─────────────────────────
+// ── Preview show-info toggle ──────────────────────────────────────────────
 
 previewShowInfoEl.addEventListener("change", () => {
   previewBadgeEl.classList.toggle("hidden", !previewShowInfoEl.checked);
 });
 previewBadgeEl.classList.add("hidden");
 
-// ── Target bindings ──────────────────────────────────
+// ── Target bindings ───────────────────────────────────────────────────────
 
 const saveAttr = debounce((val) => {
-  const attr = val.trim() || DEFAULTS.dataAttribute;
+  const attr = val.trim() || SET_DEFAULTS.dataAttribute;
   selectorPreviewEl.textContent = `[${attr}]`;
-  save({ dataAttribute: attr });
+  updateActiveSet({ dataAttribute: attr });
 }, 300);
 
-dataAttributeEl.addEventListener("input", () => saveAttr(dataAttributeEl.value));
-
-document.getElementById("reset-target").addEventListener("click", () => {
-  save({ dataAttribute: DEFAULTS.dataAttribute });
+dataAttributeEl.addEventListener("input", () => {
+  selectorPreviewEl.textContent = `[${dataAttributeEl.value.trim() || SET_DEFAULTS.dataAttribute}]`;
+  saveAttr(dataAttributeEl.value);
 });
 
-// ── Custom CSS bindings ──────────────────────────────
+document.getElementById("reset-target").addEventListener("click", () => {
+  dataAttributeEl.value = SET_DEFAULTS.dataAttribute;
+  selectorPreviewEl.textContent = `[${SET_DEFAULTS.dataAttribute}]`;
+  updateActiveSet({ dataAttribute: SET_DEFAULTS.dataAttribute });
+});
+
+// ── Custom CSS (global) ───────────────────────────────────────────────────
 
 const saveCSS = debounce(() => {
-  save({ customCSS: customStylesEl.value });
+  state.customCSS = customStylesEl.value;
+  saveGlobal({ customCSS: state.customCSS });
 }, 400);
 
 customStylesEl.addEventListener("input", saveCSS);
 
 document.getElementById("clear-css").addEventListener("click", () => {
   customStylesEl.value = "";
-  save({ customCSS: "" });
+  state.customCSS = "";
+  saveGlobal({ customCSS: "" });
 });
 
-// ── Backup ───────────────────────────────────────────
+// ── Backup ────────────────────────────────────────────────────────────────
 
 document.getElementById("export-settings").addEventListener("click", () => {
-  chrome.storage.local.get(EXPORT_KEYS, (data) => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "component-highlighter-settings.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  });
+  const data = { sets: state.sets, customCSS: state.customCSS };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "component-highlighter-settings.json";
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 const importFileEl = document.getElementById("import-file");
@@ -234,13 +357,28 @@ importFileEl.addEventListener("change", () => {
   reader.onload = (e) => {
     try {
       const parsed = JSON.parse(e.target.result);
-      const valid = {};
-      if (typeof parsed.highlightColor === "string") valid.highlightColor = parsed.highlightColor;
-      if (["solid", "dashed", "dotted"].includes(parsed.outlineStyle)) valid.outlineStyle = parsed.outlineStyle;
-      if (typeof parsed.outlineWidth === "number") valid.outlineWidth = parsed.outlineWidth;
-      if (typeof parsed.dataAttribute === "string") valid.dataAttribute = parsed.dataAttribute;
-      if (typeof parsed.customCSS === "string") valid.customCSS = parsed.customCSS;
-      save(valid);
+      let sets, customCSS;
+
+      if (Array.isArray(parsed.sets)) {
+        // New multi-set format
+        sets = parsed.sets
+          .filter((s) => s && typeof s.id === "string")
+          .map((s) => ({ ...SET_DEFAULTS, ...s, id: s.id }));
+        customCSS = typeof parsed.customCSS === "string" ? parsed.customCSS : "";
+      } else {
+        // Legacy flat format — wrap into a single set
+        sets = [makeSet({
+          ...(typeof parsed.highlightColor === "string"              && { highlightColor: parsed.highlightColor }),
+          ...(["solid","dashed","dotted"].includes(parsed.outlineStyle) && { outlineStyle: parsed.outlineStyle }),
+          ...(typeof parsed.outlineWidth === "number"               && { outlineWidth: parsed.outlineWidth }),
+          ...(typeof parsed.dataAttribute === "string"              && { dataAttribute: parsed.dataAttribute }),
+        })];
+        customCSS = typeof parsed.customCSS === "string" ? parsed.customCSS : "";
+      }
+
+      if (!sets.length) return;
+      showSaving();
+      chrome.storage.local.set({ sets, customCSS }, showSaved);
     } catch {
       // silently ignore malformed JSON
     }
@@ -249,8 +387,18 @@ importFileEl.addEventListener("change", () => {
   reader.readAsText(file);
 });
 
-// ── Reset all ────────────────────────────────────────
+// ── Reset all ─────────────────────────────────────────────────────────────
 
 document.getElementById("reset-all").addEventListener("click", () => {
-  save({ ...DEFAULTS });
+  const defaultSet = makeSet();
+  state.sets = [defaultSet];
+  state.customCSS = "";
+  activeSetId = defaultSet.id;
+  showSaving();
+  chrome.storage.local.set({ sets: state.sets, customCSS: "" }, () => {
+    showSaved();
+    renderPills();
+    populateSetEditor();
+    customStylesEl.value = "";
+  });
 });

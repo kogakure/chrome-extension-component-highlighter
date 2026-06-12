@@ -20,7 +20,45 @@
       </header>
 
       <main>
-        <!-- Appearance -->
+        <!-- Configuration Sets -->
+        <section class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Configuration Sets</span>
+            <button type="button" class="button-sm button-primary" id="add-set">+ Add Set</button>
+          </div>
+
+          <!-- Set selector pills -->
+          <div class="set-pills-row">
+            <div class="set-pills" id="set-pills" role="tablist" aria-label="Configuration sets"></div>
+          </div>
+
+          <!-- Active set editor -->
+          <div class="set-editor" id="set-editor">
+            <div class="setting-row">
+              <span class="setting-label">Set name</span>
+              <div class="name-delete-row">
+                <input
+                  type="text"
+                  id="set-name"
+                  class="mono-input name-input"
+                  placeholder="Default"
+                  spellcheck="false"
+                />
+                <button type="button" class="reset-link delete-set-btn" id="delete-set">
+                  Delete set
+                </button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <label class="toggle-row" for="set-enabled">
+                <input type="checkbox" id="set-enabled" checked />
+                Active — highlights elements when extension is on
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Appearance (per active set) -->
         <section class="settings-section">
           <div class="section-header">
             <span class="section-title">Appearance</span>
@@ -95,7 +133,7 @@
           </div>
         </section>
 
-        <!-- Preview -->
+        <!-- Preview (per active set) -->
         <section class="settings-section">
           <div class="section-header">
             <span class="section-title">Preview</span>
@@ -114,7 +152,7 @@
           </div>
         </section>
 
-        <!-- Target -->
+        <!-- Target (per active set) -->
         <section class="settings-section">
           <div class="section-header">
             <span class="section-title">Target</span>
@@ -134,16 +172,19 @@
           </div>
         </section>
 
-        <!-- Custom CSS -->
+        <!-- Custom CSS (global) -->
         <section class="settings-section">
           <div class="section-header">
-            <span class="section-title">Custom CSS</span>
+            <span class="section-title">
+              Custom CSS <span class="global-tag">Global</span>
+            </span>
             <button type="button" class="reset-link" id="clear-css">Clear</button>
           </div>
           <div class="setting-row">
             <p class="setting-hint">
               Overwrite default highlighting styles. Target
               <code>.highlighted-component</code> and <code>.info-layer</code>.
+              Applies to all sets.
             </p>
             <textarea
               name="custom-styles"

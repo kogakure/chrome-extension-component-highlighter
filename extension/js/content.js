@@ -2,13 +2,9 @@
 // get badges in the body overlay.
 const VOID_ELEMENTS = new Set(["HR", "IMG", "INPUT"]);
 
-// Only re-render on keys that affect visual output; ignoring componentCount/componentList
-// prevents an infinite loop (render writes those keys, which would re-trigger render).
-const RENDER_KEYS = new Set([
-  "activated", "customCSS", "customComponentSearch",
-  "dataAttribute", "highlightColor", "mode", "outlineStyle", "outlineWidth",
-  "selectedComponent", "showInfo",
-]);
+// Only re-render on keys that affect visual output; setStats stays out
+// to avoid an infinite loop (render writes setStats, which would re-trigger render).
+const RENDER_KEYS = new Set(["activated", "customCSS", "sets", "showInfo"]);
 
 let chOverlay = null;
 let lastData = null;
@@ -33,10 +29,12 @@ function buildSelector(mode, attr, selected, custom) {
   return `[${escapedAttr}]`;
 }
 
-function makeBadge(text) {
+function makeBadge(text, set) {
   const div = document.createElement("div");
   div.className = "info-layer";
   div.textContent = text;
+  // Inline --highlight-color so the badge's CSS-computed accent/border vars resolve per-set
+  div.style.setProperty("--highlight-color", set.highlightColor);
   return div;
 }
 
@@ -52,13 +50,19 @@ function positionBadge(badge, el) {
   } else {
     badge.classList.remove("flipped");
   }
-  badge.style.cssText =
-    `position:fixed;top:${top}px;left:${cx}px;transform:translateX(-50%);`;
+  // Use individual properties so inline --highlight-color set in makeBadge is preserved
+  badge.style.position = "fixed";
+  badge.style.top = `${top}px`;
+  badge.style.left = `${cx}px`;
+  badge.style.transform = "translateX(-50%)";
 }
 
 function removeAllHighlights() {
   document.querySelectorAll(".highlighted-component").forEach((el) => {
     el.classList.remove("highlighted-component");
+    el.style.removeProperty("--highlight-color");
+    el.style.removeProperty("--ch-outline-style");
+    el.style.removeProperty("--ch-outline-width");
   });
 }
 
@@ -66,45 +70,22 @@ function removeInfoLayers() {
   if (chOverlay) chOverlay.innerHTML = "";
 }
 
-function applyHighlights(selector, attr, showInfo) {
+function applyHighlights(selector, attr, showInfo, set) {
   const ov = showInfo ? getOverlay() : null;
   document.querySelectorAll(selector).forEach((el) => {
     el.classList.add("highlighted-component");
+    // Per-element inline vars drive the outline and ::before fill for this set's color
+    el.style.setProperty("--highlight-color", set.highlightColor);
+    el.style.setProperty("--ch-outline-style", set.outlineStyle);
+    el.style.setProperty("--ch-outline-width", `${set.outlineWidth}px`);
     if (!showInfo) return;
     const tag = el.tagName.toUpperCase();
     if (tag === "SVG") return;
     const value = el.getAttribute(attr) ?? "";
-    const badge = makeBadge(value);
+    const badge = makeBadge(value, set);
     ov.appendChild(badge);
     positionBadge(badge, el);
   });
-}
-
-function syncStyleVars(color, outlineStyle, outlineWidth) {
-  const tag = "data-ch-color";
-  const existing = document.querySelector(`[${tag}]`);
-  const colorVal = color && color !== "#3b82f6" ? color : null;
-  const styleVal = outlineStyle && outlineStyle !== "solid" ? outlineStyle : null;
-  const widthVal = outlineWidth && outlineWidth !== 2 ? `${outlineWidth}px` : null;
-
-  if (colorVal || styleVal || widthVal) {
-    const lines = [":root {"];
-    if (colorVal) lines.push(`  --highlight-color: ${colorVal} !important;`);
-    if (styleVal) lines.push(`  --ch-outline-style: ${styleVal} !important;`);
-    if (widthVal) lines.push(`  --ch-outline-width: ${widthVal} !important;`);
-    lines.push("}");
-    const css = lines.join("\n");
-    if (existing) {
-      existing.textContent = css;
-    } else {
-      const style = document.createElement("style");
-      style.setAttribute(tag, "");
-      style.textContent = css;
-      document.head.appendChild(style);
-    }
-  } else if (existing) {
-    existing.remove();
-  }
 }
 
 function syncCustomCSS(customCSS) {
@@ -133,36 +114,41 @@ function render(data) {
   const {
     activated = false,
     customCSS = "",
-    customComponentSearch = "",
-    dataAttribute = "data-component",
-    highlightColor = "#3b82f6",
-    mode = "all",
-    outlineStyle = "solid",
-    outlineWidth = 2,
-    selectedComponent = "",
+    sets = [],
     showInfo = false,
   } = data;
 
   lastData = data;
-  const attr = dataAttribute || "data-component";
 
   removeAllHighlights();
   removeInfoLayers();
 
-  const allElements = document.querySelectorAll(`[${CSS.escape(attr)}]`);
-  chrome.storage.local.set({
-    componentCount: allElements.length,
-    componentList: getUniqueComponents(allElements, attr),
-  });
-
-  syncStyleVars(highlightColor, outlineStyle, outlineWidth);
+  // Compute stats for all sets (enabled or not) and write once to storage.
+  // setStats is excluded from RENDER_KEYS so this write never triggers another render.
+  const stats = {};
+  for (const set of sets) {
+    const attr = set.dataAttribute || "data-component";
+    const elements = document.querySelectorAll(`[${CSS.escape(attr)}]`);
+    stats[set.id] = {
+      count: elements.length,
+      list: getUniqueComponents(elements, attr),
+    };
+  }
+  // Report to background (single writer) instead of writing storage directly.
+  // Background keys the data by tabId, avoiding cross-tab pollution.
+  try { chrome.runtime.sendMessage({ type: "CH_STATS", stats }); } catch (_) { /* SW asleep — it wakes on receive */ }
 
   if (activated) {
-    applyHighlights(
-      buildSelector(mode, attr, selectedComponent, customComponentSearch),
-      attr,
-      showInfo,
-    );
+    for (const set of sets) {
+      if (!set.enabled) continue;
+      const attr = set.dataAttribute || "data-component";
+      applyHighlights(
+        buildSelector(set.mode, attr, set.selectedComponent, set.customComponentSearch),
+        attr,
+        showInfo,
+        set,
+      );
+    }
     syncCustomCSS(customCSS);
   } else {
     syncCustomCSS("");
@@ -195,4 +181,10 @@ chrome.storage.onChanged.addListener((changes) => {
   if (Object.keys(changes).some((k) => RENDER_KEYS.has(k))) {
     chrome.storage.local.get(null, render);
   }
+});
+
+// Popup sends CH_REFRESH on open to force a fresh recompute (handles DOM
+// that changed since initial inject without requiring a full page reload).
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg?.type === "CH_REFRESH") chrome.storage.local.get(null, render);
 });
