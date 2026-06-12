@@ -20,6 +20,10 @@
           >0</div>
         </div>
       </header>
+
+      <!-- One tab per configuration set; rendered by popup.js -->
+      <nav class="set-tabs" id="set-tabs" aria-label="Configuration sets"></nav>
+
       <form>
         <fieldset>
           <legend>Mode</legend>
@@ -34,21 +38,19 @@
             />
             All Components
           </label>
-          <div id="container-selected">
-            <label for="mode-selected">
-              <input
-                class="radio-mode"
-                id="mode-selected"
-                name="mode"
-                type="radio"
-                value="selected"
-              />
-              Selected Component
-            </label>
-            <select name="component-list" id="component-list" class="hidden">
-              <option value=""></option>
-            </select>
-          </div>
+          <label for="mode-selected">
+            <input
+              class="radio-mode"
+              id="mode-selected"
+              name="mode"
+              type="radio"
+              value="selected"
+            />
+            Selected Component
+          </label>
+          <select name="component-list" id="component-list" class="hidden">
+            <option value=""></option>
+          </select>
           <label for="mode-custom">
             <input
               class="radio-mode"

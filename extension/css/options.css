@@ -85,8 +85,11 @@ body {
 }
 
 .section-title {
+  align-items: center;
+  display: flex;
   font-size: 10px;
   font-weight: 600;
+  gap: 7px;
   letter-spacing: 0.09em;
   opacity: 0.45;
   text-transform: uppercase;
@@ -141,6 +144,88 @@ body {
 .reset-link:hover,
 .reset-all-link:hover {
   opacity: 0.7;
+}
+
+/* ── Small primary button (for Add Set) ─────────────── */
+
+.button-sm {
+  font-size: 11px;
+  font-weight: 600;
+  height: 24px;
+  padding: 0 10px;
+}
+
+/* ── Configuration set pills ────────────────────────── */
+
+.set-pills-row {
+  margin-bottom: 16px;
+}
+
+.set-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.set-pill {
+  background: var(--color-fill);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  box-sizing: border-box;
+  color: var(--color-text);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  height: 28px;
+  min-width: 0;
+  opacity: 0.6;
+  padding: 0 12px;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.set-pill:hover {
+  opacity: 0.85;
+}
+
+.set-pill.active {
+  border-color: var(--pill-color, var(--color-primary));
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* ── Set editor ─────────────────────────────────────── */
+
+.name-delete-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.name-input {
+  flex: 1;
+}
+
+.delete-set-btn {
+  flex-shrink: 0;
+}
+
+.delete-set-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.2;
+}
+
+/* ── Global tag ─────────────────────────────────────── */
+
+.global-tag {
+  background: var(--color-fill);
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  opacity: 1;
+  padding: 1px 5px;
+  text-transform: uppercase;
 }
 
 /* ── Color swatches ─────────────────────────────────── */
