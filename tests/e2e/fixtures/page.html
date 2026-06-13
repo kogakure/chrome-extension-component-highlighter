@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Component Highlighter — Test Fixture</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    [data-component], [data-widget] { display: inline-block; padding: 0.5rem 1rem; margin: 0.5rem; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <!-- 3 data-component elements (2 Button, 1 Card) for basic highlighting tests -->
+  <div data-component="Button" id="btn-a">Button A</div>
+  <div data-component="Button" id="btn-b">Button B</div>
+  <div data-component="Card" id="card-a">Card</div>
+
+  <!-- Void element — gets highlighted but no info-layer badge -->
+  <img data-component="Icon" id="img-icon" src="" alt="Icon" width="32" height="32">
+
+  <!-- SVG — gets highlighted but no info-layer badge -->
+  <svg data-component="Logo" id="svg-logo"
+    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="32" height="32">
+    <circle cx="5" cy="5" r="4" fill="#ccc"/>
+  </svg>
+
+  <!-- Different attribute — used by multi-set tests -->
+  <div data-widget="Sidebar" id="widget-sidebar">Sidebar</div>
+  <div data-widget="Header" id="widget-header">Header</div>
+</body>
+</html>
