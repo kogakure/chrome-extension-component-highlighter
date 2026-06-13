@@ -1,0 +1,16 @@
+{
+  "name": "component-highlighter",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "http-server": "^14.1.1",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.0.0"
+  }
+}
