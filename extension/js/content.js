@@ -1,3 +1,6 @@
+// shared.js is loaded before this file (manifest js array order) and provides:
+// buildSelector, getUniqueComponents
+
 // Only void elements (can't have children) need special handling; all others
 // get badges in the body overlay.
 const VOID_ELEMENTS = new Set(["HR", "IMG", "INPUT"]);
@@ -19,14 +22,6 @@ function getOverlay() {
     document.body.appendChild(chOverlay);
   }
   return chOverlay;
-}
-
-function buildSelector(mode, attr, selected, custom) {
-  const escapedAttr = CSS.escape(attr);
-  const escapeValue = (v) => v.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-  if (mode === "selected" && selected) return `[${escapedAttr}="${escapeValue(selected)}"]`;
-  if (mode === "custom" && custom) return `[${escapedAttr}*="${escapeValue(custom)}"]`;
-  return `[${escapedAttr}]`;
 }
 
 function makeBadge(text, set) {
@@ -102,12 +97,6 @@ function syncCustomCSS(customCSS) {
   } else if (existing) {
     existing.remove();
   }
-}
-
-function getUniqueComponents(elements, attr) {
-  const values = new Set();
-  elements.forEach((el) => values.add(el.getAttribute(attr)));
-  return [...values].sort();
 }
 
 function render(data) {

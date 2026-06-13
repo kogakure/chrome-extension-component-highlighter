@@ -1,18 +1,5 @@
-const SET_DEFAULTS = {
-  name: "Default",
-  enabled: true,
-  dataAttribute: "data-component",
-  highlightColor: "#3b82f6",
-  outlineStyle: "solid",
-  outlineWidth: 2,
-  mode: "all",
-  selectedComponent: "",
-  customComponentSearch: "",
-};
-
-function makeSet(overrides = {}) {
-  return { ...SET_DEFAULTS, ...overrides, id: crypto.randomUUID() };
-}
+// shared.js is loaded before this file (options.html script order) and provides:
+// SET_DEFAULTS, makeSet, parseImport
 
 // Pick the next preset color in sequence when adding a new set
 const ADD_COLORS = ["#22c55e", "#f59e0b", "#ef4444", "#a855f7", "#3b82f6"];
@@ -356,29 +343,10 @@ importFileEl.addEventListener("change", () => {
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const parsed = JSON.parse(e.target.result);
-      let sets, customCSS;
-
-      if (Array.isArray(parsed.sets)) {
-        // New multi-set format
-        sets = parsed.sets
-          .filter((s) => s && typeof s.id === "string")
-          .map((s) => ({ ...SET_DEFAULTS, ...s, id: s.id }));
-        customCSS = typeof parsed.customCSS === "string" ? parsed.customCSS : "";
-      } else {
-        // Legacy flat format — wrap into a single set
-        sets = [makeSet({
-          ...(typeof parsed.highlightColor === "string"              && { highlightColor: parsed.highlightColor }),
-          ...(["solid","dashed","dotted"].includes(parsed.outlineStyle) && { outlineStyle: parsed.outlineStyle }),
-          ...(typeof parsed.outlineWidth === "number"               && { outlineWidth: parsed.outlineWidth }),
-          ...(typeof parsed.dataAttribute === "string"              && { dataAttribute: parsed.dataAttribute }),
-        })];
-        customCSS = typeof parsed.customCSS === "string" ? parsed.customCSS : "";
-      }
-
-      if (!sets.length) return;
+      const result = parseImport(JSON.parse(e.target.result));
+      if (!result) return;
       showSaving();
-      chrome.storage.local.set({ sets, customCSS }, showSaved);
+      chrome.storage.local.set(result, showSaved);
     } catch {
       // silently ignore malformed JSON
     }

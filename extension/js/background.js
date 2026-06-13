@@ -1,24 +1,6 @@
-const SET_DEFAULTS = {
-  name: "Default",
-  enabled: true,
-  dataAttribute: "data-component",
-  highlightColor: "#3b82f6",
-  outlineStyle: "solid",
-  outlineWidth: 2,
-  mode: "all",
-  selectedComponent: "",
-  customComponentSearch: "",
-};
-
-function makeSet(overrides = {}) {
-  return { ...SET_DEFAULTS, ...overrides, id: crypto.randomUUID() };
-}
-
-const OLD_KEYS = [
-  "componentCount", "componentList", "customComponentSearch",
-  "dataAttribute", "highlightColor", "mode", "outlineStyle",
-  "outlineWidth", "selectedComponent",
-];
+// shared.js is loaded first via importScripts and provides:
+// SET_DEFAULTS, makeSet, OLD_KEYS, migrateLegacy, computeBadgeTotal
+importScripts("/js/shared.js");
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.get(null, (data) => {
@@ -27,24 +9,10 @@ chrome.runtime.onInstalled.addListener(() => {
       if (!("setStats" in data)) chrome.storage.local.set({ setStats: {} });
       return;
     }
-    // Fresh install or upgrade from flat-key schema: wrap into one set
-    const set = makeSet({
-      dataAttribute: data.dataAttribute ?? SET_DEFAULTS.dataAttribute,
-      highlightColor: data.highlightColor ?? SET_DEFAULTS.highlightColor,
-      outlineStyle: data.outlineStyle ?? SET_DEFAULTS.outlineStyle,
-      outlineWidth: data.outlineWidth ?? SET_DEFAULTS.outlineWidth,
-      mode: data.mode ?? SET_DEFAULTS.mode,
-      selectedComponent: data.selectedComponent ?? SET_DEFAULTS.selectedComponent,
-      customComponentSearch: data.customComponentSearch ?? SET_DEFAULTS.customComponentSearch,
-    });
-    chrome.storage.local.remove(OLD_KEYS, () => {
-      chrome.storage.local.set({
-        activated: data.activated ?? false,
-        showInfo: data.showInfo ?? false,
-        customCSS: data.customCSS ?? "",
-        sets: [set],
-        setStats: {},
-      });
+    // Fresh install or upgrade from flat-key schema: migrate into multi-set format
+    const { keysToRemove, ...payload } = migrateLegacy(data);
+    chrome.storage.local.remove(keysToRemove, () => {
+      chrome.storage.local.set(payload);
     });
   });
 });
@@ -67,10 +35,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
       return;
     }
     const sets = data.sets ?? [];
-    let total = 0;
-    for (const set of sets) {
-      if (set.enabled) total += (msg.stats[set.id]?.count ?? 0);
-    }
+    const total = computeBadgeTotal(sets, msg.stats);
     chrome.action.setBadgeBackgroundColor({ color: "#3b82f6" });
     chrome.action.setBadgeTextColor({ color: "#ffffff" });
     chrome.action.setBadgeText({ text: total < 1000 ? String(total) : "999+", tabId });
